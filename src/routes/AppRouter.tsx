@@ -1,24 +1,21 @@
-import { AuthLayout } from '@/layouts/AuthLayout'
+import { AppLayout } from '@/components/layout/AppLayout'
 import { LoginPage } from '@/pages/login/LoginPage'
+import { UsersPage } from '@/pages/user/UserPage'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
+import { RoleRedirect } from './RoleRedirect'
 
 export function AppRouter() {
   return (
     <Routes>
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<LoginPage />} />
-      </Route>
+      <Route path="/login" element={<LoginPage />} />
 
       <Route element={<ProtectedRoute />}>
-        <Route
-          path="/"
-          element={
-            <div className="flex min-h-screen items-center justify-center">
-              <p className="text-muted-foreground">Dashboard proximamente</p>
-            </div>
-          }
-        />
+        <Route path="/" element={<RoleRedirect />} />
+
+        <Route element={<AppLayout />}>
+          <Route path="/usuarios" element={<UsersPage />} />
+        </Route>
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />
