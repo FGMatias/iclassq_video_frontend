@@ -19,10 +19,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from '../ui/sidebar'
 import { getNavigation } from './sidebar-nav'
 
-export function AppSiderbar() {
+export function AppSidebar() {
   const { user, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
@@ -125,6 +126,7 @@ export function AppSiderbar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   )
 }

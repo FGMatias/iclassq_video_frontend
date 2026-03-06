@@ -43,7 +43,7 @@ export const navigationByRole: Record<string, RoleNavConfig> = {
       },
     ],
   },
-  ADMINISTRADOR_EMPRESAS: {
+  ADMINISTRADOR_EMPRESA: {
     defaultPath: '/dashboard',
     groups: [
       {

@@ -16,6 +16,6 @@ export const routeGroups: Record<string, string> = {
   videos: 'Gestión',
   areas: 'Gestión',
   dispositivos: 'Gestión',
-  configuración: 'Sistema',
+  configuracion: 'Sistema',
   dashboard: 'Gestión',
 }
