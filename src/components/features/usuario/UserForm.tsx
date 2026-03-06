@@ -23,7 +23,7 @@ import {
 import { Loader2 } from 'lucide-react'
 
 import { useCompanies } from '@/hooks/queries/useCompany'
-import { createCompanyAdminSchema, type CreateCompanyAdminFormData } from '@/schemas/usuario.schema'
+import { createCompanyAdminSchema, type CreateCompanyAdminFormData } from '@/schemas/user.schema'
 import type { UserResponse } from '@/types/user.types'
 
 interface UserFormProps {
@@ -53,7 +53,6 @@ export function UserForm({ open, onOpenChange, onSubmit, user, isLoading }: User
       reset({
         companyId: undefined,
         username: user.username,
-        password: '',
         name: user.name,
         paternalSurname: user.paternalSurname ?? '',
         maternalSurname: user.maternalSurname ?? '',
@@ -65,7 +64,6 @@ export function UserForm({ open, onOpenChange, onSubmit, user, isLoading }: User
       reset({
         companyId: undefined,
         username: '',
-        password: '',
         name: '',
         paternalSurname: '',
         maternalSurname: '',
@@ -130,7 +128,7 @@ export function UserForm({ open, onOpenChange, onSubmit, user, isLoading }: User
               )}
             </div>
 
-            {!isEditing && (
+            {/* {!isEditing && (
               <div className="space-y-2">
                 <Label htmlFor="password">Contraseña *</Label>
                 <Input
@@ -144,7 +142,7 @@ export function UserForm({ open, onOpenChange, onSubmit, user, isLoading }: User
                   <p className="text-destructive text-sm">{errors.password.message}</p>
                 )}
               </div>
-            )}
+            )} */}
 
             <div className="space-y-2">
               <Label htmlFor="name">Nombre *</Label>
