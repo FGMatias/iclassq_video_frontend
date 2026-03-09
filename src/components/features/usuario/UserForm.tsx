@@ -1,30 +1,33 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-
 import { Button } from '@/components/ui/button'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
-import { Loader2 } from 'lucide-react'
-
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Separator } from '@/components/ui/separator'
 import { useCompanies } from '@/hooks/queries/useCompany'
+import { cn } from '@/lib/utils'
 import { createCompanyAdminSchema, type CreateCompanyAdminFormData } from '@/schemas/user.schema'
 import type { UserResponse } from '@/types/user.types'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Check, ChevronsUpDown, Loader2, Search } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
 
 interface UserFormProps {
   open: boolean
@@ -37,6 +40,8 @@ interface UserFormProps {
 export function UserForm({ open, onOpenChange, onSubmit, user, isLoading }: UserFormProps) {
   const { data: companies = [] } = useCompanies()
   const isEditing = !!user
+  const [companyOpen, setCompanyOpen] = useState(false)
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | undefined>()
 
   const {
     register,
@@ -60,6 +65,7 @@ export function UserForm({ open, onOpenChange, onSubmit, user, isLoading }: User
         email: user.email ?? '',
         phone: user.phone ?? '',
       })
+      setSelectedCompanyId(undefined)
     } else if (open && !user) {
       reset({
         companyId: undefined,
@@ -71,121 +77,104 @@ export function UserForm({ open, onOpenChange, onSubmit, user, isLoading }: User
         email: '',
         phone: '',
       })
+      setSelectedCompanyId(undefined)
     }
   }, [open, user, reset])
 
-  const handleFormSubmit = (data: CreateCompanyAdminFormData) => {
-    onSubmit(data)
+  const handleSelectCompany = (companyId: number) => {
+    setSelectedCompanyId(companyId)
+    setValue('companyId', companyId)
+    setCompanyOpen(false)
   }
 
+  const selectedCompany = companies.find((c) => c.id === selectedCompanyId)
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-lg">
-        <SheetHeader>
-          <SheetTitle>{isEditing ? 'Editar Usuario' : 'Nuevo Usuario'}</SheetTitle>
-          <SheetDescription>
+    <Drawer open={open} onOpenChange={onOpenChange} direction="right">
+      <DrawerContent className="flex h-full w-full flex-col sm:max-w-xl">
+        <DrawerHeader className="shrink-0 pb-4 text-left">
+          <DrawerTitle>{isEditing ? 'Editar Usuario' : 'Crear Usuario'}</DrawerTitle>
+          <DrawerDescription>
             {isEditing
-              ? 'Modifica los datos del administrador de empresa.'
-              : 'Crea un nuevo administrador de empresa.'}
-          </SheetDescription>
-        </SheetHeader>
+              ? 'Modifica los datos del usuario.'
+              : 'Completa la información para registrar un nuevo usuario en la plataforma.'}
+          </DrawerDescription>
+        </DrawerHeader>
 
-        <ScrollArea className="h-[calc(100vh-10rem)] pr-4">
-          <form id="user-form" onSubmit={handleSubmit(handleFormSubmit)} className="mt-6 space-y-5">
-            {!isEditing && (
+        <div className="no-scrollbar flex-1 overflow-y-auto px-4 sm:px-6">
+          <form
+            id="user-form"
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-6 px-1 pt-2 pb-6"
+          >
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Empresa *</Label>
-                <Select onValueChange={(val) => setValue('companyId', Number(val))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar empresa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {companies
-                      .filter((c) => c.isActive)
-                      .map((c) => (
-                        <SelectItem key={c.id} value={String(c.id)}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-                {errors.companyId && (
-                  <p className="text-destructive text-sm">{errors.companyId.message}</p>
-                )}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="username">Username *</Label>
-              <Input
-                id="username"
-                placeholder="admin_empresa"
-                disabled={isLoading}
-                {...register('username')}
-              />
-              {errors.username && (
-                <p className="text-destructive text-sm">{errors.username.message}</p>
-              )}
-            </div>
-
-            {/* {!isEditing && (
-              <div className="space-y-2">
-                <Label htmlFor="password">Contraseña *</Label>
+                <Label htmlFor="username">
+                  Usuario <span className="text-red-500">*</span>
+                </Label>
                 <Input
-                  id="password"
-                  type="password"
-                  placeholder="Mínimo 8 caracteres"
+                  id="username"
+                  placeholder="Ej. juan.perez"
                   disabled={isLoading}
-                  {...register('password')}
+                  {...register('username')}
                 />
-                {errors.password && (
-                  <p className="text-destructive text-sm">{errors.password.message}</p>
+                {errors.username && (
+                  <p className="text-destructive text-sm">{errors.username.message}</p>
                 )}
               </div>
-            )} */}
+              <div className="space-y-2">
+                <Label htmlFor="name">
+                  Nombre <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="Ej. Juan"
+                  disabled={isLoading}
+                  {...register('name')}
+                />
+                {errors.name && <p className="text-destructive text-sm">{errors.name.message}</p>}
+              </div>
+            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre *</Label>
-              <Input id="name" placeholder="Juan" disabled={isLoading} {...register('name')} />
-              {errors.name && <p className="text-destructive text-sm">{errors.name.message}</p>}
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="paternalSurname">Apellido Paterno</Label>
+                <Input
+                  id="paternalSurname"
+                  placeholder="Ej. Pérez"
+                  disabled={isLoading}
+                  {...register('paternalSurname')}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="maternalSurname">Apellido Materno</Label>
+                <Input
+                  id="maternalSurname"
+                  placeholder="Ej. González"
+                  disabled={isLoading}
+                  {...register('maternalSurname')}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="paternalSurname">Apellido Paterno</Label>
-              <Input
-                id="paternalSurname"
-                placeholder="Pérez"
-                disabled={isLoading}
-                {...register('paternalSurname')}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="maternalSurname">Apellido Materno</Label>
-              <Input
-                id="maternalSurname"
-                placeholder="García"
-                disabled={isLoading}
-                {...register('maternalSurname')}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="documentNumber">Documento de Identidad</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="documentNumber">Número de documento</Label>
+              </div>
               <Input
                 id="documentNumber"
-                placeholder="12345678"
+                placeholder="DNI / Pasaporte"
                 disabled={isLoading}
                 {...register('documentNumber')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email">Correo</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@empresa.com"
+                placeholder="nombre@ejemplo.com"
                 disabled={isLoading}
                 {...register('email')}
               />
@@ -193,36 +182,111 @@ export function UserForm({ open, onOpenChange, onSubmit, user, isLoading }: User
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Teléfono</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="phone">Teléfono</Label>
+              </div>
               <Input
                 id="phone"
-                placeholder="987654321"
+                placeholder="+51 999 999 999"
                 disabled={isLoading}
                 {...register('phone')}
               />
               {errors.phone && <p className="text-destructive text-sm">{errors.phone.message}</p>}
             </div>
-          </form>
-        </ScrollArea>
 
-        <div className="mt-4 flex justify-end gap-3">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-            Cancelar
-          </Button>
+            {!isEditing && (
+              <div className="pt-2">
+                <Separator className="mb-6" />
+                <div className="space-y-3">
+                  <Label>
+                    Empresa <span className="text-red-500">*</span>
+                  </Label>
+                  <Popover open={companyOpen} onOpenChange={setCompanyOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={companyOpen}
+                        disabled={isLoading}
+                        className={cn(
+                          'w-full justify-between font-normal',
+                          !selectedCompany && 'text-muted-foreground',
+                        )}
+                      >
+                        <Search className="mr-2 size-4 shrink-0 opacity-50" />
+                        {selectedCompany ? selectedCompany.name : 'Buscar empresa...'}
+                        <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Buscar empresa..." />
+                        <CommandList>
+                          <CommandEmpty>No se encontraron empresas.</CommandEmpty>
+                          <CommandGroup>
+                            {companies
+                              .filter((c) => c.isActive)
+                              .map((c) => (
+                                <CommandItem
+                                  key={c.id}
+                                  value={c.name}
+                                  onSelect={() => handleSelectCompany(c.id)}
+                                >
+                                  <Check
+                                    className={cn(
+                                      'mr-2 size-4',
+                                      selectedCompanyId === c.id ? 'opacity-100' : 'opacity-0',
+                                    )}
+                                  />
+                                  {c.name}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {errors.companyId && (
+                    <p className="text-destructive text-sm">{errors.companyId.message}</p>
+                  )}
+                  <p className="text-muted-foreground pt-1 text-sm">
+                    ¿No encuentras la Empresa?{' '}
+                    <button
+                      type="button"
+                      className="text-primary font-medium hover:underline"
+                      onClick={() => {
+                        // TODO: abrir modal de crear empresa
+                      }}
+                    >
+                      Crear Empresa
+                    </button>
+                  </p>
+                </div>
+              </div>
+            )}
+          </form>
+        </div>
+
+        <DrawerFooter className="shrink-0 flex-row justify-end gap-3 border-t px-4 pt-4 pb-6 sm:px-6">
+          <DrawerClose asChild>
+            <Button variant="outline" disabled={isLoading}>
+              Cancelar
+            </Button>
+          </DrawerClose>
           <Button type="submit" form="user-form" disabled={isLoading}>
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
                 Guardando...
               </>
             ) : isEditing ? (
-              'Guardar cambios'
+              'Guardar Cambios'
             ) : (
-              'Crear usuario'
+              'Guardar Usuario'
             )}
           </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   )
 }

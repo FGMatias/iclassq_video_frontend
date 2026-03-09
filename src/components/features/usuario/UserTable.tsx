@@ -1,3 +1,4 @@
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { DataTable } from '@/components/shared/DataTable'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -24,7 +25,7 @@ import {
   ShieldOff,
   Trash2,
 } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 interface UserTableProps {
   data: UserResponse[]
@@ -45,6 +46,16 @@ export function UserTable({
   onDelete,
   filterSlot,
 }: UserTableProps) {
+  const [userToToggle, setUserToToggle] = useState<UserResponse | null>(null)
+  const isAlertOpen = !!userToToggle
+
+  const handleConfirmToggle = () => {
+    if (userToToggle) {
+      onToggleActive(userToToggle)
+      setUserToToggle(null)
+    }
+  }
+
   const columns = useMemo<ColumnDef<UserResponse>[]>(
     () => [
       {
@@ -52,7 +63,7 @@ export function UserTable({
         header: ({ column }) => (
           <Button
             variant="ghost"
-            className="-ml-4 h-auto p-0 font-medium hover:bg-transparent"
+            className="h-auto p-0 font-medium hover:bg-transparent"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             Nombre Completo
@@ -143,7 +154,7 @@ export function UserTable({
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-auto">
                 <DropdownMenuItem onClick={() => onEdit(user)}>
                   <Pencil className="mr-2 h-4 w-4" />
                   Editar
@@ -153,7 +164,10 @@ export function UserTable({
                   Resetear contraseña
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onToggleActive(user)}>
+                <DropdownMenuItem
+                  onClick={() => setUserToToggle(user)}
+                  className="cursor-pointer whitespace-nowrap"
+                >
                   {user.isActive ? (
                     <>
                       <ShieldOff className="mr-2 h-4 w-4" />
@@ -180,16 +194,38 @@ export function UserTable({
         },
       },
     ],
-    [onEdit, onResetPassword, onToggleActive, onDelete],
+    [onEdit, onResetPassword, onDelete],
   )
 
   return (
-    <DataTable
-      columns={columns}
-      data={data}
-      isLoading={isLoading}
-      searchPlaceholder="Filtrar usuarios..."
-      filterSlot={filterSlot}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={data}
+        isLoading={isLoading}
+        searchPlaceholder="Filtrar usuarios..."
+        filterSlot={filterSlot}
+      />
+
+      <ConfirmDialog
+        open={isAlertOpen}
+        onOpenChange={(open) => !open && setUserToToggle(null)}
+        title={
+          userToToggle
+            ? `¿Estás seguro de ${userToToggle.isActive ? 'desactivar' : 'activar'} a este usuario?`
+            : ''
+        }
+        description={
+          userToToggle
+            ? userToToggle.isActive
+              ? `Al desactivar a ${userToToggle.name}, no podrá acceder a la plataforma hasta que vuelvas a activarlo.`
+              : `Al activar a ${userToToggle.name}, recuperará el acceso a la plataforma inmediatamente.`
+            : ''
+        }
+        onConfirm={handleConfirmToggle}
+        confirmLabel={userToToggle?.isActive ? 'Desactivar' : 'Activar'}
+        variant={userToToggle?.isActive ? 'destructive' : 'default'}
+      />
+    </>
   )
 }
