@@ -198,72 +198,77 @@ export function UserForm({ open, onOpenChange, onSubmit, user, isLoading }: User
                 {errors.phone && <p className="text-destructive text-sm">{errors.phone.message}</p>}
               </div>
 
-              <div className="pt-2">
-                <Separator className="mb-6" />
-                <div className="space-y-3">
-                  <Label>
-                    Empresa <span className="text-red-500">*</span>
-                  </Label>
-                  <Popover open={companyOpen} onOpenChange={setCompanyOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={companyOpen}
-                        disabled={isLoading}
-                        className={cn(
-                          'w-full justify-between font-normal',
-                          !selectedCompany && 'text-muted-foreground',
-                        )}
+              {!isEditing && (
+                <div className="pt-2">
+                  <Separator className="mb-6" />
+                  <div className="space-y-3">
+                    <Label>
+                      Empresa <span className="text-red-500">*</span>
+                    </Label>
+                    <Popover open={companyOpen} onOpenChange={setCompanyOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={companyOpen}
+                          disabled={isLoading}
+                          className={cn(
+                            'w-full justify-between font-normal',
+                            !selectedCompany && 'text-muted-foreground',
+                          )}
+                        >
+                          <Search className="mr-2 size-4 shrink-0 opacity-50" />
+                          {selectedCompany ? selectedCompany.name : 'Buscar empresa...'}
+                          <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-[--radix-popover-trigger-width] p-0"
+                        align="start"
                       >
-                        <Search className="mr-2 size-4 shrink-0 opacity-50" />
-                        {selectedCompany ? selectedCompany.name : 'Buscar empresa...'}
-                        <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder="Buscar empresa..." />
-                        <CommandList>
-                          <CommandEmpty>No se encontraron empresas.</CommandEmpty>
-                          <CommandGroup>
-                            {companies
-                              .filter((c) => c.isActive)
-                              .map((c) => (
-                                <CommandItem
-                                  key={c.id}
-                                  value={c.name}
-                                  onSelect={() => handleSelectCompany(c.id)}
-                                >
-                                  <Check
-                                    className={cn(
-                                      'mr-2 size-4',
-                                      selectedCompanyId === c.id ? 'opacity-100' : 'opacity-0',
-                                    )}
-                                  />
-                                  {c.name}
-                                </CommandItem>
-                              ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  {errors.companyId && (
-                    <p className="text-destructive text-sm">{errors.companyId.message}</p>
-                  )}
-                  <p className="text-muted-foreground pt-1 text-sm">
-                    ¿No encuentras la Empresa?{' '}
-                    <button
-                      type="button"
-                      className="text-primary font-medium hover:underline"
-                      onClick={() => setIsCompanyModalOpen(true)}
-                    >
-                      Crear Empresa
-                    </button>
-                  </p>
+                        <Command>
+                          <CommandInput placeholder="Buscar empresa..." />
+                          <CommandList>
+                            <CommandEmpty>No se encontraron empresas.</CommandEmpty>
+                            <CommandGroup>
+                              {companies
+                                .filter((c) => c.isActive)
+                                .map((c) => (
+                                  <CommandItem
+                                    key={c.id}
+                                    value={c.name}
+                                    onSelect={() => handleSelectCompany(c.id)}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        'mr-2 size-4',
+                                        selectedCompanyId === c.id ? 'opacity-100' : 'opacity-0',
+                                      )}
+                                    />
+                                    {c.name}
+                                  </CommandItem>
+                                ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {errors.companyId && (
+                      <p className="text-destructive text-sm">{errors.companyId.message}</p>
+                    )}
+                    <p className="text-muted-foreground pt-1 text-sm">
+                      ¿No encuentras la Empresa?{' '}
+                      <button
+                        type="button"
+                        className="text-primary font-medium hover:underline"
+                        onClick={() => setIsCompanyModalOpen(true)}
+                      >
+                        Crear Empresa
+                      </button>
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </form>
           </div>
 
